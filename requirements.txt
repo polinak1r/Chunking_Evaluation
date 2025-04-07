@@ -1,0 +1,9 @@
+pandas~=2.2.3
+numpy~=2.0.2
+sentence-transformers
+chromadb~=0.6.3
+tiktoken
+
+attrs~=25.1.0
+weave~=0.51.39
+wandb~=0.19.8
