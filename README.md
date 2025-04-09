@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/abcc9f88-cfe7-45cd-897a-f8cd73a18f68" width="1000"/>
+  <img src="images/precision_recall_cubes.png" width="1000"/>
 </p>
 
 # Chunking evaluation
@@ -12,9 +12,12 @@
 │   ├── base_chunker.py
 │   └── fixed_token_chunker.py
 │
-├── data/                        # Corpus&Questions
+├── data/                        # Corpus and Questions
 │   ├── questions_state_of_the_union.csv
 │   └── state_of_the_union.md
+│ 
+├── images/                      # Plots used in README.md
+│   ├── ...
 │
 ├── metrics/                     # Recall, Precision, IoU calculation
 │   ├── __init__.py
@@ -26,8 +29,9 @@
 │   └── pipeline.py
 │
 ├── main.py                      # Manual experiment runner (for a single config)
-├── wandb_train_script.py        # Script for wandb sweeps 
-├── requirements.txt           
+├── requirements.txt
+├── results_table.csv            # Results of experiments 
+├── wandb_train_script.py        # Script for wandb sweeps         
 └── README.md                  
 ```
 ### How you can run?
@@ -42,7 +46,7 @@ python main.py
 ### How did I run calculations?
 I conducted experiments using Weights & Biases Sweep and saved the computational script as [wandb_train_script.py](https://github.com/polinak1r/Chunking_Evaluation/blob/main/wandb_train_script.py). However, it's also necessary to configure a YAML file, where you need to specify the exact settings for your run and your custom set of hyperparameters. 
 
-<img width="1363" alt="Снимок экрана 2025-04-08 в 04 01 50" src="https://github.com/user-attachments/assets/710bf930-8e25-4c7e-8e50-e224765b60a1" />
+<img width="1000" alt="" src="images/wandb_screen.png" />
 
 ## Choosing the Hyperparameter Range and the First Experiment
 In our task, we will vary three hyperparameters for a fixed chunking method:
@@ -69,14 +73,14 @@ Precision is quite evenly spread, but Recall is different — most values are be
 There is also a well-known trade-off between precision and recall. When one goes up, the other usually goes down. There is no perfect balance between them, so we usually have to choose which metric is more important for our task.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d4b4ecf0-d684-4aa3-89d7-be6c70859a2a" width="501"/>
-  <img src="https://github.com/user-attachments/assets/1c829231-511f-450f-9e27-b5972c5def19" width="299"/>
+  <img src="images/precision_recall_distribution.png" width="501"/>
+  <img src="images/precision_recall_scatter.png" width="299"/>
 </p>
 
 
 #  Hyperparameters
-![image](https://github.com/user-attachments/assets/faa48031-9f86-4b37-9c1a-fd469028ca78)
-![image](https://github.com/user-attachments/assets/3f8040f3-0206-4eb7-a115-2367eade1206)
+![image](images/recall_hyperparameters.png)
+![image](images/precision_hyperparameters.png)
 
 #### n_results
 
@@ -91,8 +95,8 @@ Precision drops very quickly as `chunk_size` grows, because the larger the chunk
 #### Let’s formulate and try to test Hypothesis №1 — is the extremum of the Recall/chunk_size plot close to the 90th percentile of the reference answer length distribution?
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/349ecbb1-6646-4c1e-9c87-2d9010166b78" width="412"/>
-  <img src="https://github.com/user-attachments/assets/f7de6cc0-8c47-4f45-802c-ddc430982317" width="388"/>
+  <img src="images/references_length.png" width="412"/>
+  <img src="images/recall_chunksize.png" width="388"/>
 </p>
 
 #### chunk_overlap
@@ -102,7 +106,7 @@ I came to the conclusion that maybe `chunk_overlap` gives unstable results in Re
 Let’s look at the plot showing how our metrics depend on the percentage of overlap relative to chunk_size:
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/9d717ff6-0d47-4695-863f-576817c9c466" width="800"/>
+  <img src="images/overlap_chunksize_1.png" width="800"/>
 </p>
 
 Visually, it looks like `chunk_overlap` increases Recall and has almost no effect on Precision. Why is there such a sharp jump in Recall around 5%? Because we are looking at percentage overlap (overlap / chunk_size), and 5% overlap only exists for chunk sizes 500, 550, and 600, which already have lower Recall compared to, for example, chunk size 250. And we simply don’t have data for smaller chunk sizes with 5% overlap. The same logic explains the small drop in Precision at the beginning.
@@ -132,7 +136,7 @@ parameters:
 
 Let’s once again look at the relationship between the metrics and the percentage ratio `chunk_overlap / chunk_size`:
 
-![image](https://github.com/user-attachments/assets/4f831f1b-8842-4f28-aa54-d51063b67fb5)
+![image](images/overlap_chunksize_2.png)
 
 Now we can say that the hypothesis **was confirmed**. The best improvement in Recall is achieved when the overlap is around **30–40%**.
 
@@ -153,16 +157,16 @@ parameters:
     n_results_list = [1, 3, 5, 7, 10]
 ```
  
-![image](https://github.com/user-attachments/assets/949dfa74-c318-4886-99c3-508675e8708c)
-![image](https://github.com/user-attachments/assets/babe7cd0-649b-4753-8584-ae6fc4c10edd)
+![image](images/recall_reference_size.png)
+![image](images/references_sizes_distribution.png)
 I did not see any connection between the extrema of these plots and the distributions of the reference answer lengths, so the hypothesis was **not confirmed**.
 
 ## Results
 ### Recall best results:
 
-<img width="791" alt="Снимок экрана 2025-04-08 в 06 27 00" src="https://github.com/user-attachments/assets/cafe10f4-db93-4ba8-bc88-357ee4f07d42" />
+<img width="800" alt="Снимок экрана 2025-04-08 в 06 27 00" src="images/best_recall.png" />
 
 
 ### Precision best results:
 
-<img width="805" alt="Снимок экрана 2025-04-08 в 06 25 01" src="https://github.com/user-attachments/assets/12027a4f-f391-48a7-8cac-88b14b3ad4e4" />
+<img width="800" alt="Снимок экрана 2025-04-08 в 06 25 01" src="images/best_precision.png" />
