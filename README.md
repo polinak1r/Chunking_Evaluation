@@ -163,10 +163,16 @@ I did not see any connection between the extrema of these plots and the distribu
 
 ## Results
 ### Recall best results:
+We obtained 17 results with a 100% recall. Their `chunk_size` ranges from 200 to 400, and they all have an overlap of about half the `chunk_size` or slightly less. The vast majority of `n_results` values lie between 8 and 10.
 
-<img width="800" alt="Снимок экрана 2025-04-08 в 06 27 00" src="images/best_recall.png" />
+As we discussed earlier, the decline in recall for larger `chunk_size` values (400+) is likely due to the chunks becoming overly generalized. In other words, the embeddings no longer capture the information as effectively, and the semantic search results deteriorate. Additionally, context may be truncated if it exceeds the 512-token limit.
+
+<img width="800" alt="" src="images/best_recall_full.png" />
 
 
 ### Precision best results:
+The best precision scores are achieved with smallest `chunk_size` values (50–100) and the fewest predicted results (1–2).
 
-<img width="800" alt="Снимок экрана 2025-04-08 в 06 25 01" src="images/best_precision.png" />
+This is because we are extremely selective in how we choose the chunk. Of course, recall drops significantly since most answers exceed 100 tokens, making it physically impossible to cover all reference spans. But why is the upper bound on precision only around 30% rather than 100%? My view is that the issue lies with our chunker, which mechanically cuts off the text by token count, thus impairing semantic retrieval by losing continuity and scattering the information across multiple chunks.
+
+<img width="800" alt="" src="images/best_precision.png" />
